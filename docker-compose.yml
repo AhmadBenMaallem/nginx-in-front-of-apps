@@ -36,4 +36,5 @@ services:
 networks:
   my-app-net:
     driver: bridge
+    name: my-app-net  # explicitly specify the network name
 
