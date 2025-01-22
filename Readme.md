@@ -153,6 +153,75 @@ Add a CRON job to run this command regularly and reload Nginx:
 0 0 * * 0 docker-compose run --rm certbot renew && docker-compose exec nginx nginx -s reload
 ```
 
+
+### How to Check Certificate Expiration
+
+You can check the expiration date of your SSL certificates in several ways:
+
+#### Option 1: Using Certbot
+Run the following command to list the certificates managed by Certbot and their expiration dates:
+
+```bash
+docker-compose run --rm certbot certificates
+```
+
+This will output something like:
+
+```
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Found the following certs:
+  Certificate Name: abm-app.ddns.net
+    Domains: abm-app.ddns.net
+    Expiry Date: 2025-04-15 10:22:01+00:00 (VALID: 89 days)
+    Certificate Path: /etc/letsencrypt/live/abm-app.ddns.net/fullchain.pem
+    Private Key Path: /etc/letsencrypt/live/abm-app.ddns.net/privkey.pem
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+```
+
+The `Expiry Date` shows the expiration date of your certificate.
+
+#### Option 2: Check the Certificate File
+Inspect the certificate directly using `openssl`:
+
+1. Access the certificate path in your container:
+   ```bash
+   docker-compose exec nginx cat /etc/letsencrypt/live/abm-app.ddns.net/fullchain.pem | openssl x509 -noout -dates
+   ```
+
+2. This will output:
+   ```
+   notBefore=Jan 16 12:00:00 2025 GMT
+   notAfter=Apr 15 12:00:00 2025 GMT
+   ```
+
+The `notAfter` date is the expiration date.
+
+#### Option 3: Check Online
+You can use online tools like [SSL Labs](https://www.ssllabs.com/ssltest/) or [SSL Shopper](https://www.sslshopper.com/) to test your domain and see the certificate's expiration date.
+
+#### Option 4: Automate with a Script
+Create a script to check the certificate's expiration:
+
+```bash
+docker-compose run --rm certbot certificates | grep 'Expiry Date'
+```
+
+You can set up a CRON job to check and send an alert when the expiration date approaches.
+
+#### Renewing the Certificate
+Certbot automatically renews certificates 30 days before expiration. To test this, run:
+
+```bash
+docker-compose run --rm certbot renew --dry-run
+```
+
+This ensures that the renewal process works correctly.
+
+---
+
+Make sure to regularly verify your certificate's expiration and automate the renewal process.
+
+
 ## Conclusion
 
 Your application is now secured with HTTPS. Regularly verify that your certificates are valid and monitor logs for any potential issues.
