@@ -60,6 +60,10 @@ server {
     listen 80;
     server_name abm-app.ddns.net;
 
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
     location / {
         proxy_pass http://app:8080;
         proxy_set_header Host $host;
